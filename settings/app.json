@@ -1,0 +1,10 @@
+{
+  "appUrl": "localhost:3002",
+  "tokenPassword": "AkzjrKs892ghh321w4Lu87^%7(&6_IApq3AwergJnmqaWfkEq98!eIU5vqP9L2O4c1",
+  "mongodb": {
+    "url": "mongodb://localhost:27017/dbtest",
+    "user": "",
+    "password": ""
+  }
+}
+
