@@ -1,0 +1,29 @@
+version: "2"
+services:
+  my:
+    build: .
+    volumes:
+    - ./:/usr/src/app
+    ports:
+        - "6000:3001"
+    depends_on:
+        - mongo
+  
+  mongo:
+    image: mongo
+    volumes:
+      - db_data:/data/db
+    ports:
+      - "27017:27017"
+
+  nginx:
+    build: ./nginx
+    ports:
+        - "3002:80"
+    links:
+        - my
+    volumes:
+        - ./logs/nginx/:/var/log/nginx:cached
+
+volumes:
+  db_data:

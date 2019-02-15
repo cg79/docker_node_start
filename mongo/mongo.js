@@ -1,5 +1,5 @@
 const mongoClient = require('mongodb').MongoClient;
-const MONGO_URL = "mongodb://localhost:27017/polyglot_ninja";
+const MONGO_URL = "mongodb://mongo:27017/polyglot_ninja";
 
 // let db = null;
 //
@@ -27,8 +27,9 @@ class MongoService {
 
     createMongoConnection() {
         return new Promise((resolve, reject) => {
+            console.log(MONGO_URL);
             mongoClient.connect(MONGO_URL, (err, database) => {
-                if (err) reject(err);
+                if (err) {console.log(err);  reject(err); }
 
             this.db = database.db('mydb');
             resolve(this.db);
