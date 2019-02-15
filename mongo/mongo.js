@@ -1,16 +1,46 @@
 const mongoClient = require('mongodb').MongoClient;
 const MONGO_URL = "mongodb://localhost:27017/polyglot_ninja";
 
-let db = null;
+// let db = null;
+//
+//
+// const createMongoConnection = new Promise(function (resolve, reject) {
+//     mongoClient.connect(MONGO_URL, (err, database) => {
+//         if (err) reject(err);
+//
+//          db = database.db('mydb');
+//         resolve(db);
+//     })
+// });
+//
+// const getDb = () => {
+//     return db;
+// }
 
+// module.exports.createMongoConnection = () => createMongoConnection;
+// module.exports.getDb = () => getDb;
 
-const createMongoConnection = new Promise(function (resolve, reject) {
-    mongoClient.connect(MONGO_URL, (err, database) => {
-        if (err) reject(err);
+class MongoService {
+    constructor() {
+        this.db = null;
+    }
 
-        db = database.db('mydb');
-        resolve(db);
+    createMongoConnection() {
+        return new Promise((resolve, reject) => {
+            mongoClient.connect(MONGO_URL, (err, database) => {
+                if (err) reject(err);
+
+            this.db = database.db('mydb');
+            resolve(this.db);
+        })
     })
-});
+    }
 
-module.exports.createMongoConnection = () => createMongoConnection;
+    getDb(){
+        return this.db;
+    }
+
+
+}
+
+module.exports = new MongoService();

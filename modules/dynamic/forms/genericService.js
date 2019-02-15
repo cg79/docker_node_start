@@ -4,11 +4,11 @@ const ObjectID = require("mongodb").ObjectID;
 class GenericService {
 
   getCollection(name) {
-    return mongoQuery.collection(name);
+    let db = mongoQuery.getDb();
+    return db.collection(name);
   }
   
   async add(data, tokenObj, info) {
-
     if(!tokenObj) {
       throw  "no token";
     }
@@ -32,7 +32,6 @@ class GenericService {
 
 
   async edit(data, tokenObj, info) {
-
     console.log(info);
     if (!tokenObj) {
       throw  "no token";
@@ -75,7 +74,6 @@ class GenericService {
 
   async findById(data, tokenObj, info) {
     // data.userId = tokenObj.id;
-
     var filterCriteria = {
       _id: ObjectID(data._id)
     };
@@ -189,7 +187,6 @@ class GenericService {
   }
 
   async page(data, tokenObj, info) {
-
     const {collection, fields, pager} = info;
 
     console.log(info);

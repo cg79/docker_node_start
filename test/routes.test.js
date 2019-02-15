@@ -1,5 +1,5 @@
 // require the Koa server
-const server = require("../server_koa_2");
+const server = require("../server");
 // require supertest
 const request = require("supertest");
 const ObjectID = require("mongodb").ObjectID;
@@ -41,6 +41,11 @@ var token = null;
 
 var auth = {};
 
+const user = {
+  email: '',
+  password: ''
+};
+
 
 function loginUser() {
   return async function() {
@@ -65,134 +70,21 @@ function loginUser() {
 
 describe("routes: index", () => {
   test("create user used for tests", async() => {
+    await new Promise(resolve => setTimeout(resolve, 3 *1000));
+
+    user.email = generateEmail();
+    user.password = generatePassword();
+
     const body = {
-      email: generateEmail(),
-      password: generatePassword(),
-      sendEmail: false
+      email: user.email,
+      password: user.password
     };
 
-    	console.log("body ", body);
     const response = await
     request(server).post("/api/pub/security/createUser").send(body);
     expect(response.status).toEqual(200);
   expect(response.body.success).toEqual(true);
   });
-
-});
-
-describe("routes: forms", () => {
-  beforeAll(async() => {
-    var callLogin = async() => {
-    	//await new Promise(resolve => setTimeout(resolve, 500));
-    	if(token){
-    		return;
-    	}
-    try {
-    	console.log('LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO');
-      const body = {
-        login: "test@test.com",
-        password: "test",
-        sendEmail: false
-      };
-      const response = await request(server).post("/api/pub/security/login").send(body);
-      expect(response.status).toEqual(200);
-      expect(response.type).toEqual("application/json");
-
-      expect(response.body.success).toEqual(true);
-
-
-      token = response.body.data.token;
-      // done();
-      } catch (error) {
-        console.log(error);
-      }
-  }
-  await callLogin();
-  });
-  test("add form", async() => {
-      const body = {
-        data: {
-          _id: '',
-          name: 'f2'
-        },
-        proxy: {
-          module: "form",
-          method: "add"
-        }
-      };
-      console.log("TTTTTTTTTTTTTTTTTTTT", token);
-      const response = await
-      request(server).post("/api/private")
-          .set('authorization', token)
-          .send(body);
-      expect(response.status).toEqual(200);
-        expect(response.body.success).toEqual(true);
-  });
-
-	test("get form by name", async() => {
-	    const body = {
-	        data: {
-	            _id: '',
-	            name: 'f2'
-	        },
-	        proxy: {
-	            module: "form",
-	            method: "getByName"
-	        }
-	    };
-
-	    const response = await
-	    request(server).post("/api/private")
-	        .set('authorization', token)
-	        .send(body);
-	    expect(response.status).toEqual(200);
-	    expect(response.body.success).toEqual(true);
-	    console.log(response.body);
-	});
-
-	test("get forms", async() => {
-	    const body = {
-	        data: {
-	            _id: '',
-	            name: 'f2'
-	        },
-	        proxy: {
-	            module: "form",
-	            method: "getForms"
-	        }
-	    };
-
-	    const response = await
-	    request(server).post("/api/private")
-	        .set('authorization', token)
-	        .send(body);
-	    expect(response.status).toEqual(200);
-	    expect(response.body.success).toEqual(true);
-	    console.log(response.body.data.length);
-	});
-
-	test("get paged", async() => {
-	    const body = {
-	        data: {
-	            pager:{
-	            	itemsOnPage: 5,
-	            	pageNo: 1
-	            }
-	        },
-	        proxy: {
-	            module: "form",
-	            method: "getPaged"
-	        }
-	    };
-
-	    const response = await
-	    request(server).post("/api/private")
-	        .set('authorization', token)
-	        .send(body);
-	    expect(response.status).toEqual(200);
-	    expect(response.body.success).toEqual(true);
-	    console.log(response.body);
-	});
 
 });
 
@@ -207,9 +99,8 @@ describe("routes: generic", () => {
     try {
       console.log('LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO');
       const body = {
-        login: "test@test.com",
-        password: "test",
-        sendEmail: false
+        login: user.email,
+        password: user.password
       };
       const response = await request(server).post("/api/pub/security/login").send(body);
       expect(response.status).toEqual(200);
@@ -271,7 +162,7 @@ describe("routes: generic", () => {
           .send(body);
       expect(response.status).toEqual(200);
         expect(response.body.success).toEqual(true);
-        const data = response.body.data; 
+        const data = response.body.data;
         expect(data.name).toEqual('f2');
   });
 
@@ -300,7 +191,7 @@ describe("routes: generic", () => {
           .send(body);
       expect(response.status).toEqual(200);
         expect(response.body.success).toEqual(true);
-        const data = response.body.data; 
+        const data = response.body.data;
         expect(data.name).toEqual('f2');
   });
   

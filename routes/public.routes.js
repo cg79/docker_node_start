@@ -11,6 +11,8 @@ var mongoQuery = require('../mongo/mongo');
 
 
 const moduleFactory = require('./../modules/moduleFactory');
+const securityModule = require('./../modules/security/security');
+
 var Mocha = require('mocha'),
     path = require('path');
 var formidable = require('formidable');

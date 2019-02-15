@@ -15,6 +15,8 @@ const utilsService = require('../../utils/core.utils')();
 
 const responseWrapper = require('../../utils/responseWrapper')();
 const config = require('../../config/development');
+var mongoQuery = require('../../mongo/mongo');
+console.log(mongoQuery);
 
 class SecurityService {
 
@@ -22,7 +24,6 @@ class SecurityService {
         var tokenObj = {
             email: obj.email,
             id: obj._id,
-            permission: obj.permission
         };
         var token = jwt.sign(tokenObj, config.tokenPassword, {
             expiresIn: '245h'
@@ -33,34 +34,17 @@ class SecurityService {
             email: obj.email,
             firstName: obj.firstName,
             lastName: obj.lastName,
-            nick: obj.nick,
-            address: obj.address,
-            address_coord: obj.loc,
-            avatar: obj.avatar,
-            fbAvatar: obj.fbAvatar,
-            genre: obj.genre,
-            birth: obj.birth,
-            phone: obj.phone,
-            registered: obj.registered,
             token: token,
-            permission: obj.permission,
-            amount: obj.amount,
-            userOrCompany: obj.userOrCompany,
-            allowLogo: obj.allowLogo,
-            companyName: obj.companyName,
-            companyLogo: obj.companyLogo
         };
-        if (obj.t) {
-            result.t = obj.t;
-        }
         return result;
     }
 
     async createToken(obj) {
         // obj.userId
+        const db = mongoQuery.getDb();
 
         var user = await
-        mongoQuery.collection("users").findOne({
+        db.collection("users").findOne({
             _id: new ObjectID(obj.userId),
         });
         if (!user) {
@@ -73,6 +57,7 @@ class SecurityService {
 
     async login(obj) {
         console.log(obj);
+        const db = mongoQuery.getDb();
         if (!obj || !obj.login || !obj.password) {
             throw {message: "invalid_password1"};
             //return responseWrapper.sendResponse(false, null, "invalid_password", "");
@@ -87,7 +72,7 @@ class SecurityService {
         //     }]
         // });
         var user = await
-        mongoQuery.collection("users").findOne({
+        db.collection("users").findOne({
             email: obj.login.toLowerCase()
         });
         // console.log("user8888888888888888888888");
@@ -112,13 +97,16 @@ class SecurityService {
             // return responseWrapper.sendResponse(false, null, "invalid_password3", "");
         }
 
-        var userResponse = models.createUserResponse(user);
+        var userResponse = this.createUserResponse(user);
         return userResponse;
 
         //return responseWrapper.sendResponse(true, userResponse, "", "");
     }
 
     async createUser(obj) {
+        const db = mongoQuery.getDb();
+        // console.log(db);
+        // console.log('sdfsdf');
         if (!obj || !obj.email) {
             throw {message: "no_email"};
         }
@@ -127,20 +115,17 @@ class SecurityService {
         }
         obj.email = obj.email.toLowerCase();
 
-        var existentUserCriteria = mongoQuery.userSchemas.Users.findOne({
+        var existentUser = await db.collection('users').findOne({
             'email': obj.email
         });
 
-        const existentUser = await
-        mongoQuery.executeQuery(existentUserCriteria);
         if (existentUser) {
             throw {message: "email_used"};
         }
 
         var salt = encryption.salt();
         var encryptedPassword = encryption.encrypt(obj.password, salt);
-        var dbUser = new mongoQuery.userSchemas.Users({
-            name: obj.login,
+        var dbUser = {
             email: obj.email,
             password: encryptedPassword,
             salt: salt,
@@ -148,32 +133,12 @@ class SecurityService {
             langId: obj.langId,
             confirmed: false,
             reset: encryption.guid(),
-            companyName: obj.companyName,
-            phone: obj.phone,
-            firstName: obj.firstName,
-            lastName: obj.lastName,
-            userOrCompany: obj.userOrCompany,
-            allowLogo: obj.allowLogo,
             created: new Date(),
+        };
 
-            amount: {
-                value: 10
-            }
-        });
+        await db.collection('users').insert(dbUser);
 
-        if (obj.files && obj.files.length > 0) {
-            dbUser.companyLogo = obj.files[0].newFileName;
-        }
-
-        await
-        dbUser.save();
-
-        dbUser.langId = obj.langId;
-        if (obj.sendEmail == undefined) {
-            email.emailCreateUser(dbUser);
-        }
-        return await
-        models.login({
+        return await this.login({
             login: obj.email,
             password: obj.password
         });

@@ -47,7 +47,7 @@ appRouter.get("/uploads/*", async function (ctx) {
 
 let server = null;
 const port =  3001;
-
+server = app.listen(port);
 
 
 debugger;
@@ -58,15 +58,16 @@ initConnection = function (callback) {
     mongo.createMongoConnection()
         .then(() => {
         console.log('connected to database');
-        server = app.listen(port).on("error",  err =>
-          {
-            console.log(err);
-          });
-        })
-        .catch((ex) => {
-            console.log(ex);
-            process.exit(1);
-        })
+    });
+        // server = app.listen(port).on("error",  err =>
+        //   {
+        //     console.log(err);
+        //   });
+        // })
+        // .catch((ex) => {
+        //     console.log(ex);
+        //     process.exit(1);
+        // })
 };
 
 initConnection();
